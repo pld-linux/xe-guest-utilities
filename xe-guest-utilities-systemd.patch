@@ -1,0 +1,15 @@
+--- xe-guest-utilities-master/mk/xe-linux-distribution.service~	2022-02-23 13:00:31.000000000 +0100
++++ xe-guest-utilities-master/mk/xe-linux-distribution.service	2023-02-20 09:01:40.369998707 +0100
+@@ -3,8 +3,8 @@
+ ConditionVirtualization=xen
+ 
+ [Service]
+-ExecStartPre=/usr/share/oem/xs/xe-linux-distribution /var/cache/xe-linux-distribution
+-ExecStart=/usr/share/oem/xs/xe-daemon
++ExecStartPre=/usr/sbin/xe-linux-distribution /var/cache/xe-linux-distribution
++ExecStart=/usr/sbin/xe-daemon
+ 
+ [Install]
+-WantedBy=multi-user.target
+\ No newline at end of file
++WantedBy=multi-user.target

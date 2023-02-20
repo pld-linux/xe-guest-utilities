@@ -8,6 +8,7 @@ Source0:	https://github.com/xenserver/xe-guest-utilities/archive/refs/heads/mast
 Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 Patch0:		%{name}-recognize-pld.patch
+Patch1:		%{name}-systemd.patch
 URL:		https://github.com/xenserver/xe-guest-utilities/
 BuildRequires:	golang
 BuildRequires:	rpmbuild(macros) >= 2.009
@@ -24,6 +25,7 @@ XenStore.
 %prep
 %setup -q -n %{name}-master
 %patch0 -p1
+%patch1 -p1
 ln -sf %{_libdir}/golang/src/cmd/vendor/golang.org vendor
 
 %build
@@ -39,7 +41,7 @@ install -d $RPM_BUILD_ROOT{%{_sbindir},%{_libexecdir}/%{name}} \
 
 install -p build/stage%{_sbindir}/* $RPM_BUILD_ROOT%{_sbindir}
 install -p build/stage%{_bindir}/* $RPM_BUILD_ROOT%{_libexecdir}/%{name}
-install -p mk/xe-linux-distribution.service $RPM_BUILD_ROOT%{systemdunitdir}
+install -p mk/xe-linux-distribution.service $RPM_BUILD_ROOT%{systemdunitdir}/%{name}.service
 install -p mk/xen-vcpu-hotplug.rules $RPM_BUILD_ROOT%{_udevrulesdir}/z10-xen-vcpu-hotplug.rules
 
 cp -p %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
@@ -54,14 +56,13 @@ touch $RPM_BUILD_ROOT%{_localstatedir}/cache/xe-linux-distribution
 
 %preun
 if [ "$1" = "0" ]; then
-	%service xe-guest-utilitites stop
-	/sbin/chkconfig --del xe-guest-utilitites
+	%service xe-guest-utilities stop
+	/sbin/chkconfig --del xe-guest-utilities
 fi
-%systemd_preun xe-guest-utilitites.service
+%systemd_preun xe-guest-utilities.service
 
 %postun
 %systemd_reload
-
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -72,7 +73,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_sbindir}/xe-daemon
 %attr(755,root,root) %{_sbindir}/xe-linux-distribution
 %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/xe-guest-utilities
-%{systemdunitdir}/xe-linux-distribution.service
+%{systemdunitdir}/%{name}.service
 %{_udevrulesdir}/z10-xen-vcpu-hotplug.rules
 %{_libexecdir}/xe-guest-utilities
 %attr(754,root,root) /etc/rc.d/init.d/xe-guest-utilities
