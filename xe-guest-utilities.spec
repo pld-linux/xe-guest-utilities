@@ -7,6 +7,7 @@ Source0:	https://github.com/xenserver/xe-guest-utilities/archive/refs/heads/mast
 # Source0-md5:	77e4b209aac1243ac806920710c5916c
 Source1:	%{name}.init
 Source2:	%{name}.sysconfig
+Patch0:		%{name}-recognize-pld.patch
 URL:		https://github.com/xenserver/xe-guest-utilities/
 BuildRequires:	golang
 BuildRequires:	rpmbuild(macros) >= 2.009
@@ -22,6 +23,7 @@ XenStore.
 
 %prep
 %setup -q -n %{name}-master
+%patch0 -p1
 ln -sf %{_libdir}/golang/src/cmd/vendor/golang.org vendor
 
 %build
