@@ -1,0 +1,95 @@
+#!/bin/sh
+#
+# xe-guest-utilities	write information to XenStore.
+#
+# chkconfig:	345 12 88
+#
+# description:	writes system information XenStore.
+
+# Source function library
+. /etc/rc.d/init.d/functions
+
+# Get service config - may override defaults
+[ -f /etc/sysconfig/xe-guest-utilities ] && . /etc/sysconfig/xe-guest-utilities
+
+pidfile="/var/run/xe-guest-utilities.pid"
+XE_LINUX_DISTRIBUTION=/usr/sbin/xe-linux-distribution
+XE_LINUX_DISTRIBUTION_CACHE=/var/cache/xe-linux-distribution
+
+start() {
+	# Check if the service is already running?
+	if [ -f /var/lock/subsys/xe-guest-utilities ]; then
+		msg_already_running "xe-guest-utilities"
+		return
+	fi
+
+	# make sure xenfs is mounted
+	if [ ! -e /proc/xen/xenbus ] ; then
+		if [ ! -d /proc/xen ] ; then
+			fail
+			show "Could not find /proc/xen directory."
+			show "You need a post 2.6.29-rc1 kernel with CONFIG_XEN_COMPAT_XENFS=y and CONFIG_XENFS=y|m"
+		else
+			mount -t xenfs none /proc/xen
+		fi
+	fi
+
+	msg_starting "xe-guest-utilities"
+        ${XE_LINUX_DISTRIBUTION} ${XE_LINUX_DISTRIBUTION_CACHE}
+	daemon --fork /usr/sbin/xe-daemon -p ${pidfile} ${XE_GUEST_UTILITIES_OPTIONS}
+	RETVAL=$?
+	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/xe-guest-utilities
+}
+
+stop() {
+	if [ ! -f /var/lock/subsys/xe-guest-utilities ]; then
+		msg_not_running "xe-guest-utilities"
+		return
+	fi
+
+	# Stop daemons.
+	msg_stopping "xe-guest-utilities"
+	killproc --pidfile $pidfile xe-guest-utilities -TERM
+	rm -f /var/lock/subsys/xe-guest-utilities
+}
+
+condrestart() {
+	if [ ! -f /var/lock/subsys/xe-guest-utilities ]; then
+		msg_not_running "xe-guest-utilities"
+		RETVAL=$1
+		return
+	fi
+
+	stop
+	start
+}
+
+RETVAL=0
+# See how we were called.
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  restart)
+	stop
+	start
+	;;
+  try-restart)
+	condrestart 0
+	;;
+  force-reload)
+	condrestart 7
+	;;
+  status)
+	status --pidfile $pidfile xe-guest-utilities
+	RETVAL=$?
+	;;
+  *)
+	msg_usage "$0 {start|stop|restart|try-restart|force-reload|status}"
+	exit 3
+esac
+
+exit $RETVAL
