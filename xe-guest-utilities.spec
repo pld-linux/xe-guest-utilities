@@ -1,10 +1,11 @@
 Summary:	daemon for monitoring Xen Virtual machines
 Name:		xe-guest-utilities
-Version:	7.30.0
+Version:	7.33.0
 Release:	0.0.1
 License:	BSD
-Source0:	https://github.com/xenserver/xe-guest-utilities/archive/refs/heads/master/%{name}-%{version}-git.tar.gz
-# Source0-md5:	77e4b209aac1243ac806920710c5916c
+#Source0:	https://github.com/xenserver/xe-guest-utilities/archive/refs/heads/master/%{name}-%{version}-git.tar.gz
+Source0:	https://github.com/xenserver/xe-guest-utilities/archive/refs/tags/v%{version}.zip#/%{name}-%{version}.tar.gz
+# Source0-md5:	1947b442d2855ea77b2ef3326d5ad07c
 Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 Patch0:		%{name}-recognize-pld.patch
@@ -23,7 +24,7 @@ distribution version information, disk and networking statistics to
 XenStore.
 
 %prep
-%setup -q -n %{name}-master
+%setup -q -n %{name}-%{version}
 %patch0 -p1
 %patch1 -p1
 ln -sf %{_libdir}/golang/src/cmd/vendor/golang.org vendor
